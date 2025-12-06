@@ -1,28 +1,24 @@
-#20251123構築 -> 再構築　Streamlit対応版 改修20251207
+# =========================================
+# 20251123構築 → VSCode対応 Error改修20251206
+# =========================================
 
-# ===================
-# ライブラリインポート（VSCode & Streamlit対応版）
-# ===================
 import os
-from dotenv import load_dotenv
-import streamlit as st # Streamlit UI（ipywidgets の代替）
-from openai import OpenAI # OpenAI APIクライアント
 
-#===================
-#20251204 API Key設定
-#===================
-load_dotenv() # .env 読み込み
+# 20251206 Streamlit対応追加
+import streamlit as st
+from openai import OpenAI
+from dotenv import load_dotenv
+
+# ============================
+# API Key設定（dotenvに変更）
+# ============================
+load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-#===================
-#改定案　20251123
-#===================
-# ▼ 専門家別 system prompt （2人版）
-#expert_prompts = {
-#    "健康アドバイザー": "あなたは健康に関する専門家です。エビデンスに基づいた安全なアドバイスをしてください。",
-#    "ITコンサルタント": "あなたはITコンサルタントです。業務改善につながる実用的な助言を提供してください。",
-#}
+# ============================
+# 専門家別 system prompt（最新改定版）
+# ============================
 expert_prompts = {
     "健康アドバイザー": (
         "あなたは健康に関する専門家です。"
@@ -31,7 +27,6 @@ expert_prompts = {
         "医療行為に該当しないよう注意してください。"
         "回答は箇条書きで、3つ以内にまとめて下さい。"
     ),
-
     "ITコンサルタント": (
         "あなたはITコンサルタントです。"
         "業務改善につながる実用的な助言を提供してください。"
@@ -40,39 +35,44 @@ expert_prompts = {
     ),
 }
 
-#===================
-# Streamlit UI開始
-#===================
-st.title("専門家チャット AI")
+# =========================================
+# Streamlit UI（ipywidgets → Streamlitへ置換）
+# =========================================
+st.title("🎓 専門家チャット AI")
 
-# ▼ ラジオボタン UI
+# ▼ ラジオボタン UI 置換版
 expert = st.radio("専門家:", list(expert_prompts.keys()))
 
-# ▼ 質問入力
+# ▼ 質問入力 置換版
 question = st.text_input("質問:", placeholder="質問を入力してください")
 
-# ▼ 実行ボタン
+# ▼ 状態表示領域 置換版
+status_label = st.empty()
+output = st.empty()
+
+# ▼ 送信ボタン処理（on_click → if st.button）
 if st.button("送信"):
     if not question:
-        st.warning("質問を入力してください")
+        st.warning("⚠ 質問を入力してください")
     else:
-        st.info("回答生成中です。しばらくお待ちください...")
+        status_label.info("⏳ 回答生成中です。しばらくお待ちください...")
 
         try:
             messages = [
                 {"role": "system", "content": expert_prompts[expert]},
-                {"role": "user", "content": question}
+                {"role": "user", "content": question},
             ]
 
             completion = client.chat.completions.create(
                 model="gpt-4o-mini",
                 temperature=0.5,
-                messages=messages
+                messages=messages,
             )
 
-            # 🔹 出力表示
-            st.success(f"▼ 選択した専門家: {expert}")
-            st.write(completion.choices[0].message.content)
+            response = completion.choices[0].message.content
+
+            status_label.success(f"▼ 選択した専門家: {expert}")
+            output.write(response)
 
         except Exception as e:
             st.error(f"⚠ エラーが発生しました: {e}")
