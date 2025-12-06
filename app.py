@@ -1,20 +1,32 @@
-#20251123構築
-!pip install langchain==0.3.0 openai==1.47.0 langchain-community==0.3.0 langchain-openai==0.2.2 httpx==0.27.2
+#20251123構築 -> Error改修20251206
+#!pip install langchain==0.3.0 openai==1.47.0 langchain-community==0.3.0 langchain-openai==0.2.2 httpx==0.27.2
+
+#===================
+#20251206 VSCode用に修正
+#===================
+#import os
+#from google.colab import userdata
+#from openai import OpenAI
+#import ipywidgets as widgets
+#from IPython.display import display, clear_output
 
 import os
-from google.colab import userdata
 from openai import OpenAI
 import ipywidgets as widgets
 from IPython.display import display, clear_output
+from dotenv import load_dotenv #20251204追加
 
 #===================
-#20251204追加
-from dotenv import load_dotenv
-load_dotenv()
+#改定案　20251123 
 #===================
+load_dotenv() # ▼ .env 読み込み
 
 # ▼ API Key設定
-os.environ["OPENAI_API_KEY"] = userdata.get("OPENAI_API_KEY")
+#os.environ["OPENAI_API_KEY"] = userdata.get("OPENAI_API_KEY")
+#client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+# ▼ API KEY取得（VS Code は userdata 不要）
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # ▼ 専門家別 system prompt （2人版）
